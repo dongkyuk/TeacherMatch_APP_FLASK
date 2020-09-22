@@ -242,7 +242,6 @@ class DataAdminRequired(Resource):
     @auth.login_required
     @role_required.permission(1)
     def get(self):
-
         return "Test admin data OK."
 
 
@@ -250,13 +249,10 @@ class AddUser(Resource):
     @auth.login_required
     @role_required.permission(2)
     def get(self):
-
         return "OK"
 
 
 class DataUserRequired(Resource):
-
     @auth.login_required
     def get(self):
-
         return "Test user data OK."
