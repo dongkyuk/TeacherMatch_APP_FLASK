@@ -2,26 +2,62 @@ from datetime import datetime
 from flask import g
 from sqlalchemy.dialects import mysql
 from . import db
-
+from auth import jwt, auth
 
 class User(db.Model):
     # Generates default class name for table. For changing use
     # __tablename__ = 'users'
-
-    # User id.
-    id = db.Column(db.VarChar, unique=True, primary_key=True)
-    # User name.
+    userID = db.Column(db.VarChar, unique=True, primary_key=True)
+    password = db.Column(db.VarChar(length=80))
+    email = db.Column(db.VarChar(length=80))
     name = db.Column(db.String(length=80))
-    # User type
-    type = db.Column(db.Enum('student', 'mentor', 'admin'))
-    # User phone.
+    userType = db.Column(db.Enum('student', 'mentor', 'admin'))
     phone = db.Column(db.String(length=80))
-    # User email address.
     birthday = db.Column(db.DateTime)
-    # Creation time for user.
     location = db.Column(db.String)
-    # Unless otherwise stated default role is user.
+    # Other data
     data = db.Column(db.JSON)
+
+    # Generates auth token.
+    def generate_auth_token(self, permission_level):
+        # Check if admin.
+        if permission_level == 1:
+            # Generate admin token with flag 1.
+            token = jwt.dumps({'email': self.email, 'admin': 1})
+            # Return admin flag.
+            return token
+        # Return normal user flag.
+        return jwt.dumps({'email': self.email, 'admin': 0})
+
+    # Generates a new access token from refresh token.
+    @staticmethod
+    @auth.verify_token
+    def verify_auth_token(token):
+        # Create a global none user.
+        g.user = None
+
+        try:
+            # Load token.
+            data = jwt.loads(token)
+
+        except:
+            # If any error return false.
+            return False
+
+        # Check if email and admin permission variables are in jwt.
+        if 'email' and 'admin' in data:
+
+            # Set email from jwt.
+            g.user = data['email']
+
+            # Set admin permission from jwt.
+            g.admin = data['admin']
+
+            # Return true.
+            return True
+
+        # If does not verified, return false.
+        return False
 
     def __repr__(self):
         # This is only for representation how you want to see user information after query.
@@ -29,68 +65,43 @@ class User(db.Model):
             self.id, self.username, self.password, self.email, self.created)
 
 
-class Login(db.Model):
-    # User id.
-    userID = db.Column(db.VarChar)
-    # User name.
-    password = db.Column(db.VarChar(length=80))
-    # User email address.
-    email = db.Column(db.VarChar(length=80))
-
-
 class Hashtag_Following(db.Model):
-    # User id.
     userID = db.Column(db.VarChar)
-    # User name.
     hashtag_id = db.Column(db.VarChar(length=80))
-    # User email address.
     email = db.Column(db.VarChar(length=80))
 
 
 class Hashtag_User(db.Model):
-    # User id.
     userID = db.Column(db.VarChar)
-    # User name.
     hashtag_id = db.Column(db.VarChar(length=80))
-    # User email address.
     content = db.Column(db.VarChar(length=80))
 
 
 class Heart(db.Model):
-    # User id.
-    id = db.Column(db.VarChar, unique=True, primary_key=True)
-    # User name.
+    heartId = db.Column(db.VarChar, unique=True, primary_key=True)
     userID = db.Column(db.VarChar(length=80))
-    # User email address.
     timestamp = db.Column(db.DateTime)
     used = db.Column(db.Boolean)
 
 
 class Unlocked_Profile(db.Model):
-    # User id.
     heartId = db.Column(db.VarChar)
-    # User name.
     studentID = db.Column(db.VarChar(length=80))
-    # User email address.
     mentorID = db.Column(db.VarChar(length=80))
     timestamp = db.Column(db.DateTime)
     fulfilled = db.Column(db.Boolean)
 
 
 class Match_Request(db.Model):
-    # User id.
-    id = db.Column(db.VarChar, unique=True, primary_key=True)
+    matchID = db.Column(db.VarChar, unique=True, primary_key=True)
     heartId = db.Column(db.VarChar)
-    # User name.
     studentID = db.Column(db.VarChar(length=80))
-    # User email address.
     mentorID = db.Column(db.VarChar(length=80))
     timestamp = db.Column(db.DateTime)
     fulfilled = db.Column(db.Boolean)
-    
-class Match_Request(db.Model):
-    # User id.
+
+
+class mock_class_request(db.Model):
     matchID = db.Column(db.VarChar)
     timestamp = db.Column(db.DateTime)
     fulfilled = db.Column(db.Boolean)
-

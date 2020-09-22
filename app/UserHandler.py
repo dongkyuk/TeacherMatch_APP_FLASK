@@ -1,15 +1,17 @@
 import logging
+import errors as error
 from datetime import datetime
-
 from flask import g, request
 from flask_restful import Resource
-
+from auth import auth, refresh_jwt
+'''
 import api.error.errors as error
 from api.conf.auth import auth, refresh_jwt
 from api.database.database import db
 from models import User
 from api.roles import role_required
 from api.schemas.schemas import UserSchema
+'''
 
 
 class Register(Resource):
@@ -17,27 +19,35 @@ class Register(Resource):
     def post():
         try:
             # Get username, password and email.
-            userID, password, email = request.json.get('userID').strip(), request.json.get('password').strip(), \
-                                        request.json.get('email').strip()
+            userID, password, email, name, userType, phone, birthday, location, data = request.json.get(
+                'userID').strip(), request.json.get('password').strip(),
+            request.json.get('email').strip(), request.json.get('name').strip(
+            ), request.json.get('userType').strip(), request.json.get('phone').strip(),
+            request.json.get('birthday').strip(), request.json.get(
+                'location').strip(), request.json.get('data').strip()
         except Exception as why:
             # Log input strip or etc. errors.
-            logging.info("Username, password or email is wrong. " + str(why))
-            # Return invalid input error.
+            logging.info("Given Data is wrong. " + str(why))
+            # Return invalid input error.s
             return error.INVALID_INPUT_422
 
         # Check if any field is none.
-        if userID is None or password is None or email is None:
-            return error.INVALID_INPUT_422
+        userInfo = [userID, password, email, name,
+                    userType, phone, birthday, location, data]
+
+        for info in userInfo:
+            if info is None:
+                return error.INVALID_INPUT_422
 
         # Get user if it is existed.
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter_by(userId=userId, email=email).first()
 
         # Check if user is existed.
         if user is not None:
             return error.ALREADY_EXIST
 
         # Create a new user.
-        user = User(username=username, password=password, email=email)
+        user = User(userID=userID, password=password, email=email, name=name, userType=userType, phone=phone, birthday=birthday, location=location, data=)
 
         # Add user to session.
         db.session.add(user)
@@ -52,15 +62,13 @@ class Register(Resource):
 class Login(Resource):
     @staticmethod
     def post():
-
         try:
             # Get user email and password.
-            email, password = request.json.get('email').strip(), request.json.get('password').strip()
-
+            email, password = request.json.get(
+                'email').strip(), request.json.get('password').strip()
             print(email, password)
 
         except Exception as why:
-
             # Log input strip or etc. errors.
             logging.info("Email or password is wrong. " + str(why))
 
@@ -78,23 +86,17 @@ class Login(Resource):
         if user is None:
             return error.DOES_NOT_EXIST
 
-        if user.user_role == 'user':
-
+        if user.userType == 'student':
             # Generate access token. This method takes boolean value for checking admin or normal user. Admin: 1 or 0.
             access_token = user.generate_auth_token(0)
-
-        # If user is admin.
-        elif user.user_role == 'admin':
-
+        # If user is mentor.
+        elif user.userType == 'mentor':
             # Generate access token. This method takes boolean value for checking admin or normal user. Admin: 1 or 0.
-            access_token = user.generate_auth_token(1)
-
+            access_token = user.generate_auth_token(0)
         # If user is super admin.
-        elif user.user_role == 'sa':
-
+        elif user.userType == 'admin':
             # Generate access token. This method takes boolean value for checking admin or normal user. Admin: 2, 1, 0.
-            access_token = user.generate_auth_token(2)
-
+            access_token = user.generate_auth_token(1)
         else:
             return error.INVALID_INPUT_422
 
@@ -109,7 +111,6 @@ class Logout(Resource):
     @staticmethod
     @auth.login_required
     def post():
-
         # Get refresh token.
         refresh_token = request.json.get('refresh_token')
 
@@ -136,18 +137,8 @@ class Logout(Resource):
 class RefreshToken(Resource):
     @staticmethod
     def post():
-
         # Get refresh token.
         refresh_token = request.json.get('refresh_token')
-
-        # Get if the refresh token is in blacklist.
-        ref = Blacklist.query.filter_by(refresh_token=refresh_token).first()
-
-        # Check refresh token is existed.
-        if ref is not None:
-
-            # Return invalidated token.
-            return {'status': 'invalidated'}
 
         try:
             # Generate new token.
@@ -156,7 +147,6 @@ class RefreshToken(Resource):
         except Exception as why:
             # Log the error.
             logging.error(why)
-
             # If it does not generated return false.
             return False
 
@@ -175,7 +165,8 @@ class ResetPassword(Resource):
     def post(self):
 
         # Get old and new passwords.
-        old_pass, new_pass = request.json.get('old_pass'), request.json.get('new_pass')
+        old_pass, new_pass = request.json.get(
+            'old_pass'), request.json.get('new_pass')
 
         # Get user. g.user generates email address cause we put email address to g.user in models.py.
         user = User.query.filter_by(email=g.user).first()
@@ -201,18 +192,21 @@ class UsersData(Resource):
     @role_required.permission(2)
     def get(self):
         try:
-
             # Get usernames.
-            usernames = [] if request.args.get('usernames') is None else request.args.get('usernames').split(',')
+            usernames = [] if request.args.get(
+                'usernames') is None else request.args.get('usernames').split(',')
 
             # Get emails.
-            emails = [] if request.args.get('emails') is None else request.args.get('emails').split(',')
+            emails = [] if request.args.get(
+                'emails') is None else request.args.get('emails').split(',')
 
             # Get start date.
-            start_date = datetime.strptime(request.args.get('start_date'), '%d.%m.%Y')
+            start_date = datetime.strptime(
+                request.args.get('start_date'), '%d.%m.%Y')
 
             # Get end date.
-            end_date = datetime.strptime(request.args.get('end_date'), '%d.%m.%Y')
+            end_date = datetime.strptime(
+                request.args.get('end_date'), '%d.%m.%Y')
 
             print(usernames, emails, start_date, end_date)
 
