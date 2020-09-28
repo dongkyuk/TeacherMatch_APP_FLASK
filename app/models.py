@@ -78,14 +78,14 @@ class Hashtag_User(db.Model):
 
 
 class Heart(db.Model):
-    heartId = db.Column(db.VarChar, unique=True, primary_key=True)
+    heartID = db.Column(db.VarChar, unique=True, primary_key=True)
     userID = db.Column(db.VarChar(length=80))
     timestamp = db.Column(db.DateTime)
     used = db.Column(db.Boolean)
 
 
 class Unlocked_Profile(db.Model):
-    heartId = db.Column(db.VarChar)
+    heartID = db.Column(db.VarChar)
     studentID = db.Column(db.VarChar(length=80))
     mentorID = db.Column(db.VarChar(length=80))
     timestamp = db.Column(db.DateTime)
