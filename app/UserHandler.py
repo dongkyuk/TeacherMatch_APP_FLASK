@@ -1,17 +1,91 @@
 import logging
 import errors as error
-from datetime import datetime
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from flask import g, request
 from flask_restful import Resource
-from auth import auth, refresh_jwt
-'''
-import api.error.errors as error
-from api.conf.auth import auth, refresh_jwt
-from api.database.database import db
 from models import User
-from api.roles import role_required
-from api.schemas.schemas import UserSchema
+from database import db
+
+# Init login manager
+login_manager = LoginManager()
+
+# user loader for login manager
+@login_manager.user_loader
+def user_loader(id, email):
+    # Get user
+    user = User.query.filter_by(id=id, email=email).first()
+
+    return user
+
+# Register new user
+class Register(Resource):
+    @staticmethod
+    def post():
+        try:
+            # Get usser infos
+            id, password, email, name, userType, phone, birthday, location, data = request.json.get(
+                'userID').strip(), request.json.get('password').strip(),
+            request.json.get('email').strip(), request.json.get('name').strip(
+            ), request.json.get('userType').strip(), request.json.get('phone').strip(),
+            request.json.get('birthday').strip(), request.json.get(
+                'location').strip(), request.json.get('data').strip()
+        except Exception as why:
+            # Log input strip or etc. errors.
+            logging.info("Given Data is wrong. " + str(why))
+            # Return invalid input error.s
+            return error.INVALID_INPUT_422
+
+        # Check if any field is none.
+        userInfo = [id, password, email, name,
+                    userType, phone, birthday, location, data]
+
+        for info in userInfo:
+            if info is None:
+                return error.INVALID_INPUT_422
+
+        # Get user
+        user = user_loader(id, email)
+
+        # Check if user is existed.
+        if user is not None:
+            return error.ALREADY_EXIST
+
+        # Create a new user.
+        user = User(id, password, email, name,
+                    userType, phone, birthday, location, data)
+        
+        # Add user to session.
+        db.session.add(user)
+
+        # Commit session.
+        db.session.commit()
+        
+        return {'status': 'registration completed.'}
+
+
 '''
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    # Here we use a class of some kind to represent and validate our
+    # client-side form data. For example, WTForms is a library that will
+    # handle this for us, and we use a custom LoginForm to validate.
+    form = LoginForm()
+    if form.validate_on_submit():
+        # Login and validate the user.
+        # user should be an instance of your `User` class
+        login_user(user)
+
+        flask.flash('Logged in successfully.')
+
+        next = flask.request.args.get('next')
+        # is_safe_url should check if the url is safe for redirects.
+        # See http://flask.pocoo.org/snippets/62/ for an example.
+        if not is_safe_url(next):
+            return flask.abort(400)
+
+        return flask.redirect(next or flask.url_for('index'))
+    return flask.render_template('login.html', form=form)
+
 
 
 class Register(Resource):
@@ -256,3 +330,4 @@ class DataUserRequired(Resource):
     @auth.login_required
     def get(self):
         return "Test user data OK."
+'''

@@ -1,9 +1,10 @@
-db = {
-    'user'     : 'root',
-    'password' : '[mysql 비밀번호]',
-    'host'     : '127.0.0.1',
-    'port'     : '3306',
-    'database' : 'the_mentor_flask'
-}
+import os
 
-DB_URL = f"mysql+mysqlconnector://{db['user']}:{db['password']}@{db['host']}:{db['port']}/{db['database']}?charset=utf8" 
+# Set sql uri
+SQLALCHEMY_DATABASE_URI = 'mysql://root:password@127.0.0.1:3306/the_mentor'
+
+# Turn On Testing
+TESTING = True  
+
+# Set Secret key
+SECRET_KEY = os.urandom(24)
