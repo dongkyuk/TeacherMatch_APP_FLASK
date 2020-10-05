@@ -31,6 +31,21 @@ http code 402
     "resolve": "The username or password is not correct."
 }
 ```
+## Register
+**You send:**  Your  user info.
+
+**Request:**
+{
+	"id" : "dongle",
+	"password" : "1234",
+	"email" : "dongle@naver.com",
+	"name" : "Dongkyun Kim",
+	"userType" : "mentor",
+	"phone" : "01092812079",
+	"birthday" :"2000-08-13",
+	"location" : "seoul",
+	"data" : {}
+}
 
 ## Login
 **You send:**  Your  login credentials.

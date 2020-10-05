@@ -33,13 +33,16 @@ class Register(Resource):
         try:
             # Get usser infos
             json_data = request.get_json()
-
-            # Extract id and email
             id = json_data['id']
+            password = json_data['password']
             email = json_data['email']
-
-            # Extract all userInfo
-            userInfo = [json_data[key] for key in json_data]
+            name = json_data['name']
+            userType = json_data['userType']
+            phone = json_data['phone']
+            birthday = json_data['birthday']
+            location = json_data['location']
+            data = json_data['data']
+            
         except Exception as why:
             # Log input strip or etc. errors.
             logging.info("Given Data is wrong. " + str(why))
@@ -47,6 +50,9 @@ class Register(Resource):
             return error.INVALID_INPUT_422
 
         # Check if any field is none.
+        userInfo = [id, password, email, name,
+                    userType, phone, birthday, location, data]
+
         for info in userInfo:
             if info is None:
                 return error.INVALID_INPUT_422
@@ -59,8 +65,8 @@ class Register(Resource):
             return error.ALREADY_EXIST
 
         # Create a new user.
-        user = User(id, password, email, name,
-                    userType, phone, birthday, location, data)
+        user = User(id = id, password = password, email = email, name = name,
+                    userType = userType, phone = phone, birthday = birthday, location= location, data= data)
         
         # Add user to session.
         db.session.add(user)
