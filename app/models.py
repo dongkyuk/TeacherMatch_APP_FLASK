@@ -1,16 +1,19 @@
 from datetime import datetime
 from flask import g
 from sqlalchemy.dialects import mysql
-from . import db
-from auth import jwt, auth
+try:
+    from database import db
+    from auth import jwt, auth
+except ImportError:
+    from .database import db
 
 
 class User(db.Model):
     # Generates default class name for table. For changing use
     # __tablename__ = 'users'
-    id = db.Column(db.VarChar, unique=True, primary_key=True)
-    password = db.Column(db.VarChar(length=80))
-    email = db.Column(db.VarChar(length=80))
+    id = db.Column(db.String, unique=True, primary_key=True)
+    password = db.Column(db.String(length=80))
+    email = db.Column(db.String(length=80))
     name = db.Column(db.String(length=80))
     userType = db.Column(db.Enum('student', 'mentor', 'admin'))
     phone = db.Column(db.String(length=80))
@@ -78,43 +81,44 @@ class User(db.Model):
         return "<User(id='%s', name='%s', type='%s', phone='%s', birthday='%s', location = '%s', data = '%s')>" % (
             self.id, self.username, self.password, self.email, self.created)
 
-
+'''
 class Hashtag_Following(db.Model):
-    user_id = db.Column(db.VarChar)
-    hashtag_id = db.Column(db.VarChar(length=80))
-    content = db.Column(db.VarChar(length=80))
+    user_id = db.Column(db.String)
+    hashtag_id = db.Column(db.String(length=80))
+    content = db.Column(db.String(length=80))
 
 
 class Hashtag_User(db.Model):
-    user_id = db.Column(db.VarChar)
-    hashtag_id = db.Column(db.VarChar(length=80))
-    content = db.Column(db.VarChar(length=80))
+    user_id = db.Column(db.String)
+    hashtag_id = db.Column(db.String(length=80))
+    content = db.Column(db.String(length=80))
 
 
 class Heart(db.Model):
-    id = db.Column(db.VarChar, unique=True, primary_key=True)
-    user_id = db.Column(db.VarChar(length=80))
+    id = db.Column(db.String, unique=True, primary_key=True)
+    user_id = db.Column(db.String(length=80))
     timestamp = db.Column(db.DateTime)
     used = db.Column(db.Boolean)
 
 
 class Unlocked_Profile(db.Model):
-    heart_id = db.Column(db.VarChar)
-    student_id = db.Column(db.VarChar(length=80))
-    mentor_id = db.Column(db.VarChar(length=80))
+    heart_id = db.Column(db.String)
+    student_id = db.Column(db.String(length=80))
+    mentor_id = db.Column(db.String(length=80))
     timestamp = db.Column(db.DateTime)
 
 
 class match(db.Model):
-    id = db.Column(db.VarChar, unique=True, primary_key=True)
-    heart_id = db.Column(db.VarChar)
-    student_id = db.Column(db.VarChar(length=80))
-    mentor_id = db.Column(db.VarChar(length=80))
+    id = db.Column(db.String, unique=True, primary_key=True)
+    heart_id = db.Column(db.String)
+    student_id = db.Column(db.String(length=80))
+    mentor_id = db.Column(db.String(length=80))
     timestamp = db.Column(db.DateTime)
     fulfilled = db.Column(db.Boolean)
 
 
 class mock_class_request(db.Model):
-    match_id = db.Column(db.VarChar)
+    match_id = db.Column(db.String)
     timestamp = db.Column(db.DateTime)
     fulfilled = db.Column(db.Boolean)
+'''

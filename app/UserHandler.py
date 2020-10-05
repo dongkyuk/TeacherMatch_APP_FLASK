@@ -1,13 +1,22 @@
 import logging
-import errors as error
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from flask import g, request
 from flask_restful import Resource
-from models import User
-from database import db
+try:
+    from errors import Error 
+    from models import User
+    from database import db
+except ImportError:
+    from .errors import Error
+    from .models import User
+    from .database import db
+
 
 # Init login manager
 login_manager = LoginManager()
+
+# Init custom error
+error = Error()
 
 # user loader for login manager
 @login_manager.user_loader
@@ -23,12 +32,14 @@ class Register(Resource):
     def post():
         try:
             # Get usser infos
-            id, password, email, name, userType, phone, birthday, location, data = request.json.get(
-                'userID').strip(), request.json.get('password').strip(),
-            request.json.get('email').strip(), request.json.get('name').strip(
-            ), request.json.get('userType').strip(), request.json.get('phone').strip(),
-            request.json.get('birthday').strip(), request.json.get(
-                'location').strip(), request.json.get('data').strip()
+            json_data = request.get_json()
+
+            # Extract id and email
+            id = json_data['id']
+            email = json_data['email']
+
+            # Extract all userInfo
+            userInfo = [json_data[key] for key in json_data]
         except Exception as why:
             # Log input strip or etc. errors.
             logging.info("Given Data is wrong. " + str(why))
@@ -36,9 +47,6 @@ class Register(Resource):
             return error.INVALID_INPUT_422
 
         # Check if any field is none.
-        userInfo = [id, password, email, name,
-                    userType, phone, birthday, location, data]
-
         for info in userInfo:
             if info is None:
                 return error.INVALID_INPUT_422
