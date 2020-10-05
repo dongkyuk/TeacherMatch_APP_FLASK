@@ -93,7 +93,7 @@ class Hashtag_User(db.Model):
     hashtag_id = db.Column(db.String(length=80))
     content = db.Column(db.String(length=80))
 
-
+'''
 class Heart(db.Model):
     id = db.Column(db.String, unique=True, primary_key=True)
     user_id = db.Column(db.String(length=80))
@@ -121,4 +121,3 @@ class mock_class_request(db.Model):
     match_id = db.Column(db.String)
     timestamp = db.Column(db.DateTime)
     fulfilled = db.Column(db.Boolean)
-'''

@@ -59,8 +59,8 @@ Content-Type: application/json
 Content-Length: xy
 
 {
-    "username": "foo",
-    "password": "1234567" 
+	"email" : "dongle@naver.com",
+	"password" : "1235"
 }
 ```
 **Successful Response:**

@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_restful import Api
 from app.database import db
-from app.UserHandler import login_manager, Register
+from app.UserHandler import login_manager, Register, Login, Logout
 # from app.UserHandler import
 
 # Create/returns flask app with db
@@ -34,7 +34,9 @@ def main():
     api = Api(app)
 
     ## Setup Api resource routing
-    api.add_resource(Register, '/auth/register')
+    api.add_resource(Register, '/register')
+    api.add_resource(Login, '/login')
+    api.add_resource(Logout, '/logout')
 
     # Run app
     app.run(port=5000, debug=True, host='localhost', use_reloader=True)

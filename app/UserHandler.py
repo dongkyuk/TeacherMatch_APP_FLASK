@@ -1,9 +1,12 @@
 import logging
+import bcrypt
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
-from flask import g, request
+from flask import g, request, jsonify
 from flask_restful import Resource
+from password_validator import PasswordValidator
+
 try:
-    from errors import Error 
+    from errors import Error
     from models import User
     from database import db
 except ImportError:
@@ -18,23 +21,38 @@ login_manager = LoginManager()
 # Init custom error
 error = Error()
 
+# Create a schema
+schema = PasswordValidator()
+# Add properties to it
+schema\
+    .min(8)\
+    .max(100)\
+    .has().uppercase()\
+    .has().lowercase()\
+    .has().digits()\
+    .has().no().spaces()\
+
+
 # user loader for login manager
+
+
 @login_manager.user_loader
-def user_loader(id, email):
+def user_loader(email):
     # Get user
-    user = User.query.filter_by(id=id, email=email).first()
+    user = User.query.filter_by(email=email).first()
 
     return user
 
 # Register new user
+
+
 class Register(Resource):
     @staticmethod
     def post():
         try:
-            # Get usser infos
+            # Get user infos
             json_data = request.get_json()
             id = json_data['id']
-            password = json_data['password']
             email = json_data['email']
             name = json_data['name']
             userType = json_data['userType']
@@ -42,7 +60,18 @@ class Register(Resource):
             birthday = json_data['birthday']
             location = json_data['location']
             data = json_data['data']
-            
+
+            # Get original password
+            org_password = json_data['password']
+            if not schema.validate(org_password):
+                logging.info("Wrong Password")
+                return error.INVALID_INPUT_422
+            # Hash password
+            hashed_password = bcrypt.hashpw(
+                org_password.encode('utf-8'), bcrypt.gensalt())
+            # Decode and save
+            password = hashed_password.decode('utf-8')
+
         except Exception as why:
             # Log input strip or etc. errors.
             logging.info("Given Data is wrong. " + str(why))
@@ -57,38 +86,65 @@ class Register(Resource):
             if info is None:
                 return error.INVALID_INPUT_422
 
-        # Get user
-        user = user_loader(id, email)
-
-        # Check if user is existed.
-        if user is not None:
+        # Check if user existed.
+        if user_loader(email) is not None:
             return error.ALREADY_EXIST
 
         # Create a new user.
-        user = User(id = id, password = password, email = email, name = name,
-                    userType = userType, phone = phone, birthday = birthday, location= location, data= data)
-        
+        user = User(id=id, password=password, email=email, name=name,
+                    userType=userType, phone=phone, birthday=birthday, location=location, data=data)
+
         # Add user to session.
         db.session.add(user)
 
         # Commit session.
         db.session.commit()
-        
+
         return {'status': 'registration completed.'}
+
+# Login
+
+
+class Login(Resource):
+    @staticmethod
+    def post():
+        try:
+            # Get user infos
+            json_data = request.get_json()
+            email = json_data['email']
+            password = json_data['password']
+
+        except Exception as why:
+            # Log input strip or etc. errors.
+            logging.info("Email or password is wrong. " + str(why))
+
+            # Return invalid input error.
+            return error.INVALID_INPUT_422
+
+        user = user_loader(email)
+
+        if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+            json_res = {'ok': True, 'msg': 'user <%s> logined' % id}
+            user.authenticated = True
+            login_user(user, remember=True)
+        else:
+            json_res = {'ok': False, 'error': 'Invalid user_id or password'}
+        user = current_user
+        return jsonify(json_res)
+
+
+class Logout(Resource):
+    @staticmethod
+    @login_required
+    def post():
+        user = current_user
+        user.authenticated = False
+        json_res = {'ok': True, 'msg': 'user <%s> logout' % user.user_id}
+        logout_user()
+        return jsonify(json_res)
 
 
 '''
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    # Here we use a class of some kind to represent and validate our
-    # client-side form data. For example, WTForms is a library that will
-    # handle this for us, and we use a custom LoginForm to validate.
-    form = LoginForm()
-    if form.validate_on_submit():
-        # Login and validate the user.
-        # user should be an instance of your `User` class
-        login_user(user)
-
         flask.flash('Logged in successfully.')
 
         next = flask.request.args.get('next')
@@ -100,81 +156,7 @@ def login():
         return flask.redirect(next or flask.url_for('index'))
     return flask.render_template('login.html', form=form)
 
-
-
-class Register(Resource):
-    @staticmethod
-    def post():
-        try:
-            # Get username, password and email.
-            userID, password, email, name, userType, phone, birthday, location, data = request.json.get(
-                'userID').strip(), request.json.get('password').strip(),
-            request.json.get('email').strip(), request.json.get('name').strip(
-            ), request.json.get('userType').strip(), request.json.get('phone').strip(),
-            request.json.get('birthday').strip(), request.json.get(
-                'location').strip(), request.json.get('data').strip()
-        except Exception as why:
-            # Log input strip or etc. errors.
-            logging.info("Given Data is wrong. " + str(why))
-            # Return invalid input error.s
-            return error.INVALID_INPUT_422
-
-        # Check if any field is none.
-        userInfo = [userID, password, email, name,
-                    userType, phone, birthday, location, data]
-
-        for info in userInfo:
-            if info is None:
-                return error.INVALID_INPUT_422
-
-        # Get user if it is existed.
-        user = User.query.filter_by(userId=userId, email=email).first()
-
-        # Check if user is existed.
-        if user is not None:
-            return error.ALREADY_EXIST
-
-        # Create a new user.
-        user = User(userID=userID, password=password, email=email, name=name, userType=userType, phone=phone, birthday=birthday, location=location, data=)
-
-        # Add user to session.
-        db.session.add(user)
-
-        # Commit session.
-        db.session.commit()
-
-        # Return success if registration is completed.
-        return {'status': 'registration completed.'}
-
-
-class Login(Resource):
-    @staticmethod
-    def post():
-        try:
-            # Get user email and password.
-            email, password = request.json.get(
-                'email').strip(), request.json.get('password').strip()
-            print(email, password)
-
-        except Exception as why:
-            # Log input strip or etc. errors.
-            logging.info("Email or password is wrong. " + str(why))
-
-            # Return invalid input error.
-            return error.INVALID_INPUT_422
-
-        # Check if user information is none.
-        if email is None or password is None:
-            return error.INVALID_INPUT_422
-
-        # Get user if it is existed.
-        user = User.query.filter_by(email=email, password=password).first()
-
-        # Check if user is not existed.
-        if user is None:
-            return error.DOES_NOT_EXIST
-
-        if user.userType == 'student':
+     if user.userType == 'student':
             # Generate access token. This method takes boolean value for checking admin or normal user. Admin: 1 or 0.
             access_token = user.generate_auth_token(0)
         # If user is mentor.
