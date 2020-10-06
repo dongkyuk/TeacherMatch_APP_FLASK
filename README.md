@@ -72,10 +72,17 @@ git clone https://github.com/github_username/repo_name.git
 ```sh
 pip install -r requirements.txt
 ```
-3. Run
+3. Set up MySQL database server (create a db and run the_mentor.sql session)
+
+[How-to](https://dev.mysql.com/doc/mysql-getting-started/en/) (Docker recommended)
+
+You can still access the API structure in http://localhost:5000/apidocs without db server running. 
+
+4. Run
 ```sh
 python3 run.py
 ```
+
 <!-- API DOC -->
 ## API Documentation
 Documentation is done with [Flassger](https://github.com/flasgger/flasgger).
