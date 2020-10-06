@@ -37,7 +37,6 @@ All requests must include a `content-type` of `application/json` and the body mu
 │   ├── messages.py                       # Response message class
 │   ├── models.py			  # Models for flask-sqlalchemy
 ├── config.py				  # App Config
-├── legacy				  # Legacy folder			
 ├── requirements.txt
 ├── run.py				  # Run app
 ```
