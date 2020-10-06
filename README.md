@@ -14,7 +14,6 @@
   * [Example Fail Message](#example-fail-message)
 
 
-
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 RESRful API for The Mentor App Backend.
@@ -44,6 +43,23 @@ To get a local copy up and running follow these simple steps.
 ```sh
 brew install mysql
 ```
+
+```
+├── README.md               
+├── The_Mentor.sql                        # SQL File for mysqldb
+├── app
+│   ├── MatchHandler.py                   # API Resource for match, heart, hashtag
+│   ├── UserHandler.py			  # API Resource for user authentication
+│   ├── database.py                       # Database init
+│   ├── docs				  # Documentation folder
+│   ├── messages.py                       # Response message class
+│   ├── models.py			  # Models for flask-sqlalchemy
+├── config.py				  # App Config
+├── legacy				  # Legacy folder			
+├── requirements.txt
+├── run.py				  # Run app
+```
+
 
 ### Installation
 
