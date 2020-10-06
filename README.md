@@ -65,6 +65,8 @@ Documentation is done with [Flassger](https://github.com/flasgger/flasgger).
 
 Flasgger comes with SwaggerUI embedded so you can access http://localhost:5000/apidocs and visualize and interact with your API resources.
 
+[![Swagger UI Screen Shot][swagger-screenshot]](http://localhost:5000/apidocs)
+
 ### Response Codes
 ```
 200: Success
@@ -92,3 +94,7 @@ http code 422
 	"data" : {"password": "Password does not match schema"}
 }
 ```
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[swagger-screenshot]: images/screenshot.png
