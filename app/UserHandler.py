@@ -1,4 +1,5 @@
 import bcrypt
+from flasgger import swag_from
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from flask import request, jsonify
 from flask import current_app as app
@@ -59,7 +60,6 @@ def password_hasher(password):
         password.encode('utf-8'), bcrypt.gensalt())
     # Decode and return
     return hashed_password.decode('utf-8')
-
 
 class Register(Resource):
     def post(self):

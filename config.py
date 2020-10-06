@@ -7,7 +7,12 @@ import logging
 SQLALCHEMY_DATABASE_URI = 'mysql://root:password@127.0.0.1:3306/the_mentor'
 
 # Turn On Testing
-TESTING = True  
+TESTING = True
 
 # Set Secret key
 SECRET_KEY = os.urandom(24)
+
+SWAGGER = {
+    'title': 'The_Mentor_FLASK',
+    'doc_dir': './app/docs/'
+}

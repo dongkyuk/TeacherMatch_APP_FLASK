@@ -1,0 +1,17 @@
+Logs user into the system
+---
+responses:
+  200:
+    description: Successful
+  422:
+    description: Given user info is wrong format
+  409:
+    description: User already exists
+requestBody:
+  description: Your  user info. (Password should be min 8, max 100 characters with uppercase, lowercase, number without spacing)
+  required: true
+  content:
+    application/json:
+      examples:
+         mentor1:
+          $ref: '#/definitions/Palette'
