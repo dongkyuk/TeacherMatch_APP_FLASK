@@ -4,6 +4,7 @@
 ## Table of Contents
 
 * [About the Project](#about-the-project)
+  * [Structure](#structure)
   * [Built With](#built-with)
 * [Getting Started](#getting-started)
   * [Prerequisites](#prerequisites)
@@ -24,6 +25,23 @@ All responses come in standard JSON with [Jsend format](https://github.com/omnit
 
 All requests must include a `content-type` of `application/json` and the body must be valid JSON.
 
+### Structure
+```
+├── README.md               
+├── The_Mentor.sql                        # SQL File for mysqldb
+├── app
+│   ├── MatchHandler.py                   # API Resource for match, heart, hashtag
+│   ├── UserHandler.py			  # API Resource for user authentication
+│   ├── database.py                       # Database init
+│   ├── docs				  # Documentation folder
+│   ├── messages.py                       # Response message class
+│   ├── models.py			  # Models for flask-sqlalchemy
+├── config.py				  # App Config
+├── legacy				  # Legacy folder			
+├── requirements.txt
+├── run.py				  # Run app
+```
+
 ### Built With
 * [MySQL](https://www.mysql.com)
 * [Flask](https://flask.palletsprojects.com/en/1.1.x/)
@@ -42,22 +60,6 @@ To get a local copy up and running follow these simple steps.
 * MySQL
 ```sh
 brew install mysql
-```
-
-```
-├── README.md               
-├── The_Mentor.sql                        # SQL File for mysqldb
-├── app
-│   ├── MatchHandler.py                   # API Resource for match, heart, hashtag
-│   ├── UserHandler.py			  # API Resource for user authentication
-│   ├── database.py                       # Database init
-│   ├── docs				  # Documentation folder
-│   ├── messages.py                       # Response message class
-│   ├── models.py			  # Models for flask-sqlalchemy
-├── config.py				  # App Config
-├── legacy				  # Legacy folder			
-├── requirements.txt
-├── run.py				  # Run app
 ```
 
 
