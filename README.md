@@ -8,7 +8,11 @@ All requests must include a `content-type` of `application/json` and the body mu
 ## Requirements
 mysql
 
-## Response Codes 
+## API Documentation
+Documentation is done with [Flassger](https://github.com/flasgger/flasgger).
+
+Flasgger comes with SwaggerUI embedded so you can access http://localhost:5000/apidocs and visualize and interact with your API resources.
+
 ### Response Codes
 ```
 200: Success
@@ -36,55 +40,3 @@ http code 422
 	data : {"password": "Password does not match schema"}
 }
 ```
-
-## Register
-**You send:**  Your  user info. (Password should be min 8, max 100 characters with uppercase, lowercase, number without spacing) 
-**You get:**  A success or fail response
-
-**Request:**
-```json
-POST /register HTTP/1.1
-Accept: application/json
-Content-Type: application/json
-{
-	"id" : "mentor1",
-	"password" : "Password1234",
-	"email" : "mentor1@naver.com",
-	"name" : "Dongkyun Kim",
-	"userType" : "mentor",
-	"phone" : "01092812079",
-	"birthday" :"2000-08-13",
-	"location" : "seoul",
-	"data" : {}
-}
-```
-
-## Login
-**You send:**  Your  login credentials.
-**You get:**  A success or fail response
-
-**Request:**
-```json
-POST /login HTTP/1.1
-Accept: application/json
-Content-Type: application/json
-{
-	"email" : "mentor1@naver.com",
-	"password" : "Password1234"
-}
-``` 
-
-## Logout
-**You send:**  
-**You get:**  A success or fail response
-
-**Request:**
-```json
-POST /login HTTP/1.1
-Accept: application/json
-Content-Type: application/json
-{
-	"email" : "mentor1@naver.com",
-	"password" : "Password1234"
-}
-``` 
