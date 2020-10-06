@@ -1,0 +1,26 @@
+Make Heart
+---
+responses:
+  200:
+    description: Successful
+    content:
+      application/json:
+        schema: {}
+        example: { "status": "success", "data": { "heart_id": "a" } }
+  422:
+    description: Given match data is wrong format
+    content:
+      application/json:
+        schema: {}
+        example:
+          {
+            "status": "fail",
+            "data": {"match": "Given match data is wrong format"}
+          }
+requestBody:
+  description: mentor_id and timestamp
+  required: true
+  content:
+    application/json:
+      schema: {}
+      example: { "mentor_id": "mentor1", "timestamp": "2000-08-13" }

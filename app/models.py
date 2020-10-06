@@ -1,28 +1,80 @@
 from datetime import datetime
 from flask import g
 from sqlalchemy.dialects import mysql
-from . import db
+try:
+    from database import db
+    from auth import jwt, auth
+except ImportError:
+    from .database import db
+
 
 class User(db.Model):
     # Generates default class name for table. For changing use
     # __tablename__ = 'users'
-
-    # User id.
-    id = db.Column(db.VarChar, primary_key=True)
-    # User name.
+    id = db.Column(db.String, unique=True, primary_key=True)
+    password = db.Column(db.String(length=80))
+    email = db.Column(db.String(length=80))
     name = db.Column(db.String(length=80))
-    # User type
-    type = db.Column(db.Enum('student', 'mentor', 'admin'))
-    # User phone.
+    userType = db.Column(db.Enum('student', 'mentor', 'admin'))
     phone = db.Column(db.String(length=80))
-    # User email address.
     birthday = db.Column(db.DateTime)
-    # Creation time for user.
-    location = db.Column(db.DateTime)
-    # Unless otherwise stated default role is user.
+    location = db.Column(db.String)
+    # Other data
     data = db.Column(db.JSON)
+
+    def is_active(self):
+        return True
+
+    def get_id(self):
+        return self.id
+
+    def is_authenticated(self):
+        return self.authenticated
+
+    def is_anonymous(self):
+        return False
 
     def __repr__(self):
         # This is only for representation how you want to see user information after query.
         return "<User(id='%s', name='%s', type='%s', phone='%s', birthday='%s', location = '%s', data = '%s')>" % (
-                      self.id, self.username, self.password, self.email, self.created)
+            self.id, self.name, self.userType, self.phone, self.birthday, self.location, self.data)
+
+
+class Hashtag(db.Model):
+    id = db.Column(db.String, unique=True, primary_key=True)
+    content = db.Column(db.String(length=80))
+
+
+class UserHashtag(db.Model):
+    id = db.Column(db.String, unique=True, primary_key=True)
+    user_id = db.Column(db.String)
+    hashtag_id = db.Column(db.String)
+
+
+class Heart(db.Model):
+    id = db.Column(db.String, unique=True, primary_key=True)
+    user_id = db.Column(db.String(length=80))
+    timestamp = db.Column(db.DateTime)
+    used = db.Column(db.Boolean)
+
+
+class UnlockedProfile(db.Model):
+    heart_id = db.Column(db.String, primary_key=True)
+    student_id = db.Column(db.String(length=80))
+    mentor_id = db.Column(db.String(length=80))
+    timestamp = db.Column(db.DateTime)
+
+
+class Match(db.Model):
+    id = db.Column(db.String, unique=True, primary_key=True)
+    heart_id = db.Column(db.String)
+    student_id = db.Column(db.String(length=80))
+    mentor_id = db.Column(db.String(length=80))
+    timestamp = db.Column(db.DateTime)
+    fulfilled = db.Column(db.Boolean)
+
+
+class Mock_class_request(db.Model):
+    match_id = db.Column(db.String, primary_key=True)
+    timestamp = db.Column(db.DateTime)
+    fulfilled = db.Column(db.Boolean)

@@ -1,0 +1,54 @@
+Register user into the system
+---
+responses:
+  200:
+    description: Successful
+    content:
+      application/json:
+        schema: {}
+        example: { "status": "success", "data": null }
+  422:
+    description: Given user info is wrong format
+    content:
+      application/json:
+        schema: {}
+        example: { "status": "fail", "data": {"password": "Password does not match schema"} }   
+  409:
+    description: User already exists
+    content:
+        application/json:
+          schema: {}
+          example: { "status": "fail", "data": {"user": "User already exists"} }   
+requestBody:
+  description: Your  user info. (Password should be min 8, max 100 characters with uppercase, lowercase, number without spacing)
+  required: true
+  content:
+    application/json:
+      schema: {}
+      examples:
+        mentor1:
+          value:
+            {
+              "id": "mentor1",
+              "password": "Password1234",
+              "email": "mentor1@naver.com",
+              "name": "Dongkyun Kim",
+              "userType": "mentor",
+              "phone": "01092812079",
+              "birthday": "2000-08-13",
+              "location": "seoul",
+              "data": {},
+            }
+        student1:
+          value:
+            {
+              "id": "student1",
+              "password": "Password1234",
+              "email": "student1@naver.com",
+              "name": "Dongkyun Kim",
+              "userType": "student",
+              "phone": "01092812079",
+              "birthday": "2000-08-13",
+              "location": "seoul",
+              "data": {},
+            }

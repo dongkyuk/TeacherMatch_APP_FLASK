@@ -1,0 +1,19 @@
+Use Heart
+---
+responses:
+  200:
+    description: Successful
+    content:
+      application/json:
+        schema: {}
+        example: { "status": "success", "data": { "id": "a" } }
+  422:
+    description: No usable heart exists
+    content:
+      application/json:
+        schema: {}
+        example:
+          {
+            "status": "fail",
+            "data": {"heart": "No usable heart exists"},
+          }

@@ -1,0 +1,27 @@
+Change password
+---
+responses:
+  200:
+    description: Successful
+    content:
+      application/json:
+        schema: {}
+        example: { "status": "success", "data": null }
+  422:
+    description: Given password is wrong
+    content:
+      application/json:
+        schema: {}
+        example: { "status": "fail", "data": {"password": "Given passwords are wrong format"}}   
+requestBody:
+  description: Your old and new password
+  required: true
+  content:
+    application/json:
+      schema: {}
+      example: 
+        {
+          "old_pass" : "Password1234",
+          "new_pass" : "Password1235"
+        }
+         

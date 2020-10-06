@@ -1,0 +1,9 @@
+Logout user
+---
+responses:
+  200:
+    description: Successful
+    content:
+      application/json:
+        schema: {}
+        example: { "status": "success", "data": null }
