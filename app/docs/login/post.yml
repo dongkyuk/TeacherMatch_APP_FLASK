@@ -1,0 +1,34 @@
+Login user into the system
+---
+responses:
+  200:
+    description: Successful
+    content:
+      application/json:
+        schema: {}
+        example: { "status": "success", "data": null }
+  422:
+    description: Given user info is wrong 
+    content:
+      application/json:
+        schema: {}
+        example: { "status": "fail", "data": {"user": "Given email or password is wrong format"}}   
+requestBody:
+  description: Your login credentials 
+  required: true
+  content:
+    application/json:
+      schema: {}
+      examples:
+        mentor1:
+          value:
+            {
+              "email" : "mentor1@naver.com",
+              "password" : "Password1234"
+            }
+        student1:
+          value:
+            {
+              "email" : "student1@naver.com",
+              "password" : "Password1234"
+            }   

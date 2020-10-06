@@ -45,13 +45,13 @@ def main():
     api = Api(app)
 
     # Swagger for documentation
-    swagger = Swagger(app, parse=True)
+    swagger = Swagger(app)
 
     # Setup Api resource routing
     api.add_resource(Register, '/register')
     api.add_resource(Login, '/login')
-    api.add_resource(Logout, '/logout')
-    api.add_resource(ResetPassword, '/password-reset')
+    api.add_resource(Logout, '/user/logout')
+    api.add_resource(ResetPassword, '/user/password')
     api.add_resource(UserData, '/user/data')
 
     api.add_resource(Hearts, '/user/heart')

@@ -14,5 +14,7 @@ SECRET_KEY = os.urandom(24)
 
 SWAGGER = {
     'title': 'The_Mentor_FLASK',
-    'doc_dir': './app/docs/'
+    'doc_dir': './app/docs/',
+    'uiversion': 3,
+    'openapi' : '3.0.3'
 }
