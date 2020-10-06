@@ -5,6 +5,9 @@ All responses come in standard JSON with [Jsend format](https://github.com/omnit
 
 All requests must include a `content-type` of `application/json` and the body must be valid JSON.
 
+## Requirements
+mysql
+
 ## Response Codes 
 ### Response Codes
 ```
