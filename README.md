@@ -76,12 +76,12 @@ pip install -r requirements.txt
 
 [How-to](https://dev.mysql.com/doc/mysql-getting-started/en/) (Docker recommended)
 
-You can still access the API structure in http://localhost:5000/apidocs without db server running. 
-
 4. Run
 ```sh
 python3 run.py
 ```
+You can still access the API structure in http://localhost:5000/apidocs without Step 3
+
 
 <!-- API DOC -->
 ## API Documentation
