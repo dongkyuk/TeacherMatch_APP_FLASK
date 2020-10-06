@@ -1,5 +1,9 @@
 # The_Mentor_FLASK
-This API uses `POST` request to communicate and HTTP [response codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) to indenticate status and errors. All responses come in standard JSON. All requests must include a `content-type` of `application/json` and the body must be valid JSON.
+This API uses HTTP [response codes](https://en.wikipedia.org/wiki/List_of_HTTP_status_codes) to indenticate status and errors. 
+
+All responses come in standard JSON with [Jsend format](https://github.com/omniti-labs/jsend)
+
+All requests must include a `content-type` of `application/json` and the body must be valid JSON.
 
 ## Response Codes 
 ### Response Codes
@@ -12,33 +16,37 @@ This API uses `POST` request to communicate and HTTP [response codes](https://en
 422: Unprocessable Entity 
 50X: Server Error
 ```
-### Error Codes Details
-```
-100: Bad Request
-110: Unauthorized
-120: User Authenticaion Invalid
-130: Parameter Error
-140: Item Missing
-150: Conflict
-160: Server Error
-```
-### Example Error Message
+
+### Example Success Message
 ```json
-http code 402
+http code 200
 {
-    "code": 120,
-    "message": "invalid crendetials",
-    "resolve": "The username or password is not correct."
+	status : "success",
+	data : {}
 }
 ```
+### Example Fail Message
+```json
+http code 422
+{
+	status : "fail",
+	data : {"password": "Password does not match schema"}
+}
+```
+
 ## Register
-**You send:**  Your  user info.
+**You send:**  Your  user info. (Password should be min 8, max 100 characters with uppercase, lowercase, number without spacing) 
+**You get:**  A success or fail response
 
 **Request:**
+```json
+POST /register HTTP/1.1
+Accept: application/json
+Content-Type: application/json
 {
-	"id" : "dongle",
-	"password" : "1234",
-	"email" : "dongle@naver.com",
+	"id" : "mentor1",
+	"password" : "Password1234",
+	"email" : "mentor1@naver.com",
 	"name" : "Dongkyun Kim",
 	"userType" : "mentor",
 	"phone" : "01092812079",
@@ -46,45 +54,34 @@ http code 402
 	"location" : "seoul",
 	"data" : {}
 }
+```
 
 ## Login
 **You send:**  Your  login credentials.
-**You get:** An `API-Token` with wich you can make further actions.
+**You get:**  A success or fail response
 
 **Request:**
 ```json
 POST /login HTTP/1.1
 Accept: application/json
 Content-Type: application/json
-Content-Length: xy
-
 {
-	"email" : "dongle@naver.com",
-	"password" : "1235"
+	"email" : "mentor1@naver.com",
+	"password" : "Password1234"
 }
-```
-**Successful Response:**
-```json
-HTTP/1.1 200 OK
-Server: My RESTful API
-Content-Type: application/json
-Content-Length: xy
+``` 
 
-{
-   "apitoken": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-   "expirationDate": "2018-02-13T15:31:55.559Z"
-}
-```
-**Failed Response:**
-```json
-HTTP/1.1 401 Unauthorized
-Server: My RESTful API
-Content-Type: application/json
-Content-Length: xy
+## Logout
+**You send:**  
+**You get:**  A success or fail response
 
+**Request:**
+```json
+POST /login HTTP/1.1
+Accept: application/json
+Content-Type: application/json
 {
-    "code": 120,
-    "message": "invalid crendetials",
-    "resolve": "The username or password is not correct."
+	"email" : "mentor1@naver.com",
+	"password" : "Password1234"
 }
 ``` 
