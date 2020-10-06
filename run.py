@@ -1,7 +1,9 @@
-from flask import Flask, jsonify, request
+import logging
+from flask import Flask
 from flask_restful import Api
 from app.database import db
-from app.UserHandler import login_manager, Register, Login, Logout
+from app.UserHandler import login_manager, Register, Login, Logout, ResetPassword, UserData
+from app.MatchHandler import Hearts, Matches, Hashtags, UserHashtags
 # from app.UserHandler import
 
 # Create/returns flask app with db
@@ -10,6 +12,7 @@ def create_app():
     app = Flask(__name__)
     # Set Config
     app.config.from_pyfile('config.py')
+    logging.basicConfig(level=logging.INFO)
     # Return app.
     return app
     
@@ -37,7 +40,13 @@ def main():
     api.add_resource(Register, '/register')
     api.add_resource(Login, '/login')
     api.add_resource(Logout, '/logout')
+    api.add_resource(ResetPassword, '/password-reset')
+    api.add_resource(UserData, '/user/data')
 
+    api.add_resource(Hearts, '/user/heart')
+    api.add_resource(Matches, '/user/match')
+    api.add_resource(Hashtags, '/hashtag')
+    api.add_resource(UserHashtags, '/user/hashtag')
     # Run app
     app.run(port=5000, debug=True, host='localhost', use_reloader=True)
 

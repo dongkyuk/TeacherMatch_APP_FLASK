@@ -21,49 +21,7 @@ class User(db.Model):
     location = db.Column(db.String)
     # Other data
     data = db.Column(db.JSON)
-    
-    '''
-    # Generates auth token.
-    def generate_auth_token(self, permission_level):
-        # Check if admin.
-        if permission_level == 1:
-            # Generate admin token with flag 1.
-            token = jwt.dumps({'email': self.email, 'admin': 1})
-            # Return admin flag.
-            return token
-        # Return normal user flag.
-        return jwt.dumps({'email': self.email, 'admin': 0})
 
-    # Generates a new access token from refresh token.
-    @staticmethod
-    @auth.verify_token
-    def verify_auth_token(token):
-        # Create a global none user.
-        g.user = None
-
-        try:
-            # Load token.
-            data = jwt.loads(token)
-
-        except:
-            # If any error return false.
-            return False
-
-        # Check if email and admin permission variables are in jwt.
-        if 'email' and 'admin' in data:
-
-            # Set email from jwt.
-            g.user = data['email']
-
-            # Set admin permission from jwt.
-            g.admin = data['admin']
-
-            # Return true.
-            return True
-
-        # If does not verified, return false.
-        return False
-    '''
     def is_active(self):
         return True
 
@@ -79,21 +37,20 @@ class User(db.Model):
     def __repr__(self):
         # This is only for representation how you want to see user information after query.
         return "<User(id='%s', name='%s', type='%s', phone='%s', birthday='%s', location = '%s', data = '%s')>" % (
-            self.id, self.username, self.password, self.email, self.created)
+            self.id, self.name, self.userType, self.phone, self.birthday, self.location, self.data)
 
-'''
-class Hashtag_Following(db.Model):
-    user_id = db.Column(db.String)
-    hashtag_id = db.Column(db.String(length=80))
+
+class Hashtag(db.Model):
+    id = db.Column(db.String, unique=True, primary_key=True)
     content = db.Column(db.String(length=80))
 
 
-class Hashtag_User(db.Model):
+class UserHashtag(db.Model):
+    id = db.Column(db.String, unique=True, primary_key=True)
     user_id = db.Column(db.String)
-    hashtag_id = db.Column(db.String(length=80))
-    content = db.Column(db.String(length=80))
+    hashtag_id = db.Column(db.String)
 
-'''
+
 class Heart(db.Model):
     id = db.Column(db.String, unique=True, primary_key=True)
     user_id = db.Column(db.String(length=80))
@@ -101,14 +58,14 @@ class Heart(db.Model):
     used = db.Column(db.Boolean)
 
 
-class Unlocked_Profile(db.Model):
-    heart_id = db.Column(db.String)
+class UnlockedProfile(db.Model):
+    heart_id = db.Column(db.String, primary_key=True)
     student_id = db.Column(db.String(length=80))
     mentor_id = db.Column(db.String(length=80))
     timestamp = db.Column(db.DateTime)
 
 
-class match(db.Model):
+class Match(db.Model):
     id = db.Column(db.String, unique=True, primary_key=True)
     heart_id = db.Column(db.String)
     student_id = db.Column(db.String(length=80))
@@ -117,7 +74,7 @@ class match(db.Model):
     fulfilled = db.Column(db.Boolean)
 
 
-class mock_class_request(db.Model):
-    match_id = db.Column(db.String)
+class Mock_class_request(db.Model):
+    match_id = db.Column(db.String, primary_key=True)
     timestamp = db.Column(db.DateTime)
     fulfilled = db.Column(db.Boolean)

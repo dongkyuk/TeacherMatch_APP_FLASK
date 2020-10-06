@@ -10,18 +10,17 @@ CREATE TABLE `user` (
   `data` json NOT NULL
 );
 
-CREATE TABLE `hashtag_following` (
-  `user_id` varchar(255) NOT NULL,
-  `hashtag_id` varchar(255) NOT NULL,
+CREATE TABLE `hashtag` (
+  `id` varchar(255) UNIQUE PRIMARY KEY,
   `content` varchar(255) NOT NULL,
-   FOREIGN KEY(user_id) REFERENCES user(id)
 );
 
-CREATE TABLE `hashtag_user` (
+CREATE TABLE `user_hashtag` (
+  `id` varchar(255) UNIQUE PRIMARY KEY,
   `user_id` varchar(255) NOT NULL,
   `hashtag_id` varchar(255) NOT NULL,
-  `content` varchar(255) NOT NULL,
    FOREIGN KEY(user_id) REFERENCES user(id)
+   FOREIGN KEY(hashtag_id) REFERENCES hashtag(id)
 );
 
 CREATE TABLE `heart` (
