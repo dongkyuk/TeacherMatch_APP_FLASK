@@ -34,10 +34,8 @@ class User(db.Model):
     def is_anonymous(self):
         return False
 
-    def __repr__(self):
-        # This is only for representation how you want to see user information after query.
-        return "<User(id='%s', name='%s', type='%s', phone='%s', birthday='%s', location = '%s', data = '%s')>" % (
-            self.id, self.name, self.userType, self.phone, self.birthday, self.location, self.data)
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
 class Hashtag(db.Model):

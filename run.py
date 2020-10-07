@@ -3,7 +3,7 @@ from flasgger import Swagger
 from flask import Flask
 from flask_restful import Api
 from app.database import db
-from app.UserHandler import login_manager, Register, Login, Logout, ResetPassword, UserData
+from app.UserHandler import login_manager, Register, Login, Logout, UserData
 from app.MatchHandler import Hearts, Matches, Hashtags, UserHashtags
 # from app.UserHandler import
 
@@ -50,14 +50,14 @@ def main():
     # Setup Api resource routing
     api.add_resource(Register, '/register')
     api.add_resource(Login, '/login')
-    api.add_resource(Logout, '/user/logout')
-    api.add_resource(ResetPassword, '/user/password')
-    api.add_resource(UserData, '/user/data')
+    api.add_resource(Logout, '/users/<string:user_id>/logout')
+#    api.add_resource(ResetPassword, '/user/<string:id>/password')
+    api.add_resource(UserData, '/users/<string:user_id>/data')
 
-    api.add_resource(Hearts, '/user/heart')
-    api.add_resource(Matches, '/user/match')
-    api.add_resource(Hashtags, '/hashtag')
-    api.add_resource(UserHashtags, '/user/hashtag')
+    api.add_resource(Hearts, '/users/<string:user_id>/heart')
+    api.add_resource(Matches, '/users/<string:user_id>/match')
+    api.add_resource(Hashtags, '/hashtags')
+    api.add_resource(UserHashtags, '/users/<string:user_id>/hashtag')
     # Run app
     app.run(port=5000, debug=True, host='localhost', use_reloader=True)
 
