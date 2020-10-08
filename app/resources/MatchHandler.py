@@ -1,54 +1,41 @@
 import logging
 import uuid
-from flask_login import LoginManager, login_user, logout_user, current_user, login_required
+from flask_login import login_required, fresh_login_required
 from flask import g, request, jsonify
 from flask_restful import Resource
+from app.messages import Message
+from app.models import User, Hashtag, UserHashtag, Heart, UnlockedProfile, Match, Mock_class_request
+from app.resources.UserHandler import login_manager, type_required, get_user
+from app.database import db
 
-try:
-    from messages import Message
-    from models import User, Hashtag, UserHashtag, Heart, UnlockedProfile, Match, Mock_class_request
-    from database import db
-except ImportError:
-    from .messages import Message
-    from .models import User, Hashtag, UserHashtag, Heart, UnlockedProfile, Match, Mock_class_request
-    from .database import db
 
 # Init custom error
 message = Message()
 
-# Load heart with id
-
 
 def heart_loader(id):
-    # Get heart
     heart = Heart.query.filter_by(id=id).first()
     return heart
 
 
-# Load match with id
 def match_loader(id):
-    # Get match
     match = Match.query.filter_by(id=id).first()
     return match
 
-# Load hashtag with id
-
 
 def hashtag_loader(id):
-    # Get match
     hashtag = Hashtag.query.filter_by(id=id).first()
     return hashtag
 
-# Make heart when given timestamp
-
 
 class Hearts(Resource):
-    @login_required
-    def get(self):
-        # Get current user id
-        user_id = current_user.id
+    method_decorators = [login_required]
 
-        # Get first heart
+    def get(self, user_id):
+        # Get an unused heart
+
+        _ = get_user(user_id)
+
         heart = Heart.query.filter_by(user_id=user_id, used=False).first()
 
         if heart is None:
@@ -58,8 +45,10 @@ class Hearts(Resource):
 
         return message.SUCCESS
 
-    @login_required
-    def post(self):
+    def post(self, user_id):
+        # Make heart when given timestamp
+        _ = get_user(user_id)
+
         try:
             json_data = request.get_json()
             timestamp = json_data['timestamp']
@@ -69,9 +58,6 @@ class Hearts(Resource):
             # Return invalid input errors
             message.set_data({"timestamp": "Given Timestamp is wrong format"})
             return message.INVALID_INPUT_422
-
-        # Get current user id
-        user_id = current_user.id
 
         # Create random heart id
         id = uuid.uuid1()
@@ -91,10 +77,12 @@ class Hearts(Resource):
         message.set_data({'heart_id': heart.id})
         return message.SUCCESS
 
-    @login_required
-    def put(self):
+    def put(self, id):
+        # Use Heart
+        _ = get_user(user_id)
+
         # Find Usable Heart
-        heart_json = Hearts.get(self)
+        heart_json = Hearts.get(self, id)
 
         id = heart_json[0]["data"]["id"]
         if id is None:
@@ -103,6 +91,7 @@ class Hearts(Resource):
         else:
             heart = heart_loader(id)
 
+        # Use Heart
         heart.used = True
 
         # Commit session.
@@ -113,25 +102,30 @@ class Hearts(Resource):
 
 
 class Matches(Resource):
-    @login_required
-    def get(self):
-        # Get current user id
-        user_id = current_user.id
-        # Get first heart
-        if current_user.userType == "student":
-            match = Match.query.filter_by(student_id=user_id).first()
-        elif current_user.userType == "mentor":
-            match = Match.query.filter_by(mentor_id=user_id).first()
+    method_decorators = [login_required]
 
-        if match is None:
-            message.set_data({"id": None})
+    def get(self, user_id):
+        # Get all matches
+        user = get_user(user_id)
+
+        # Check user type
+        if user.userType == "student":
+            match_lst = Match.query.filter_by(student_id=user_id).all()
+        elif user.userType == "mentor":
+            match_lst = Match.query.filter_by(mentor_id=user_id).all()
+
+        if match_lst is None:
+            message.set_data({"id_lst": None})
         else:
-            message.set_data({"id": match.id})
+            message.set_data({"id_lst": [match.id for match in match_lst]})
 
         return message.SUCCESS
 
-    @login_required
-    def post(self):
+    @type_required(type="user")
+    def post(self, user_id):
+        # Create match given mentor_id and timestamp
+        _ = get_user(user_id)
+
         try:
             json_data = request.get_json()
             mentor_id = json_data['mentor_id']
@@ -143,19 +137,13 @@ class Matches(Resource):
             message.set_data({"match": "Given match data is wrong format"})
             return message.INVALID_INPUT_422
 
-        # Get current student id
-        if current_user.userType == "student":
-            student_id = current_user.id
-        else:
-            message.set_data({"auth": "Only students can request match"})
-            return message.FORBIDDEN
-
         # Check if existing mentor
         if User.query.filter_by(id=mentor_id).first() is None:
             message.set_data({"mentor_id": "Mentor does not exist"})
             return message.NOT_FOUND_404
 
-        heart_json = Hearts.put(Resource)
+        # Use heart
+        heart_json = Hearts.put(Resource, user_id)
         if heart_json[1] != 200:
             return heart_json
         heart_id = heart_json[0]['data']['id']
@@ -167,7 +155,7 @@ class Matches(Resource):
             id = uuid.uuid1()
 
         # Create a new match
-        match = Match(id=id, heart_id=heart_id, student_id=student_id,
+        match = Match(id=id, heart_id=heart_id, student_id=user_id,
                       mentor_id=mentor_id, timestamp=timestamp, fulfilled=False)
 
         # Add match to session.
@@ -179,9 +167,43 @@ class Matches(Resource):
         message.set_data({"id": match.id})
         return message.SUCCESS
 
+    @type_required("mentor")
+    def put(self, user_id):
+        _ = get_user(user_id)
+        try:
+            json_data = request.get_json()
+            match_id = json_data['match_id']
+        except Exception as why:
+            # Log input strip or etc. errors.
+            logging.info("Given Data is wrong. " + str(why))
+            # Return invalid input errors
+            message.set_data({"match": "Given match id is wrong format"})
+            return message.INVALID_INPUT_422
+
+        # Check if existing match
+        match = Match.query.filter_by(id=match_id).first()
+        if match is None:
+            message.set_data({"match_id": "Match does not exist"})
+            return message.NOT_FOUND_404
+
+        # Use Heart
+        heart_json = Hearts.put(Resource, user_id)
+        if heart_json[1] != 200:
+            return heart_json
+
+        # Fulfill match
+        match.fulfilled = True
+
+        # Commit session.
+        db.session.commit()
+
+        message.set_data({"id": match.id})
+        return message.SUCCESS
+
 
 class Hashtags(Resource):
-    @login_required
+    method_decorators = [login_required]
+
     def get(self):
         # Get all hashtags
         hashtags = Hashtag.query.all()
@@ -194,7 +216,6 @@ class Hashtags(Resource):
 
         return message.SUCCESS
 
-    @login_required
     def post(self):
         try:
             json_data = request.get_json()
@@ -231,12 +252,12 @@ class Hashtags(Resource):
 
 
 class UserHashtags(Resource):
-    @login_required
-    def get(self):
-        # Get current user id
-        user_id = current_user.id
+    method_decorators = [login_required]
 
-        # Get first hashtag
+    def get(self, user_id):
+        # Get all following hashtag
+        _ = get_user(user_id)
+
         hashtags = UserHashtag.query.filter_by(user_id=user_id).all()
 
         if hashtags is None:
@@ -247,8 +268,10 @@ class UserHashtags(Resource):
 
         return message.SUCCESS
 
-    @login_required
-    def post(self):
+    def post(self, user_id):
+        # Follow new hashtag
+        _ = get_user(user_id)
+
         try:
             json_data = request.get_json()
             hashtag_id = json_data['hashtag_id']
@@ -273,7 +296,7 @@ class UserHashtags(Resource):
 
         # Create a new hashtag
         user_hashtag = UserHashtag(
-            id=id, hashtag_id=hashtag_id, user_id=current_user.id)
+            id=id, hashtag_id=hashtag_id, user_id=user_id)
 
         # Add match to session.
         db.session.add(user_hashtag)
@@ -284,8 +307,10 @@ class UserHashtags(Resource):
         message.set_data({"id": user_hashtag.id})
         return message.SUCCESS
 
-    @login_required
-    def delete(self):
+    def delete(self, user_id):
+        # Unfollow a hashtag
+        _ = get_user(user_id)
+
         try:
             json_data = request.get_json()
             hashtag_id = json_data['hashtag_id']
@@ -297,8 +322,10 @@ class UserHashtags(Resource):
                 {"hashtag_id": "Given hashtag id is wrong format"})
             return message.INVALID_INPUT_422
 
+        # Find hashtag
         user_hashtag = UserHashtag.query.filter_by(
-            hashtag_id=hashtag_id, user_id=current_user.id).first()
+            hashtag_id=hashtag_id, user_id=user_id).first()
+
         # Check if existing content
         if user_hashtag is None:
             message.set_data({"hashtag_id": "Not following hashtag"})
