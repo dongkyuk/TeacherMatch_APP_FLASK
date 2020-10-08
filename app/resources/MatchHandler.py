@@ -1,19 +1,13 @@
 import logging
 import uuid
-from flask_login import current_user, login_required, fresh_login_required
+from flask_login import login_required, fresh_login_required
 from flask import g, request, jsonify
 from flask_restful import Resource
+from app.messages import Message
+from app.models import User, Hashtag, UserHashtag, Heart, UnlockedProfile, Match, Mock_class_request
+from app.resources.UserHandler import login_manager, type_required, get_user
+from app.database import db
 
-try:
-    from messages import Message
-    from models import User, Hashtag, UserHashtag, Heart, UnlockedProfile, Match, Mock_class_request
-    from UserHandler import login_manager, type_required
-    from database import db
-except ImportError:
-    from .messages import Message
-    from .models import User, Hashtag, UserHashtag, Heart, UnlockedProfile, Match, Mock_class_request
-    from .UserHandler import login_manager, type_required
-    from .database import db
 
 
 # Init custom error
@@ -40,6 +34,9 @@ class Hearts(Resource):
 
     def get(self, user_id):
         # Get an unused heart
+
+        _ = get_user(user_id)
+
         heart = Heart.query.filter_by(user_id=user_id, used=False).first()
 
         if heart is None:
@@ -51,6 +48,8 @@ class Hearts(Resource):
 
     def post(self, user_id):
         # Make heart when given timestamp
+        _ = get_user(user_id)
+
         try:
             json_data = request.get_json()
             timestamp = json_data['timestamp']
@@ -81,6 +80,7 @@ class Hearts(Resource):
 
     def put(self, id):
         # Use Heart
+        _ = get_user(user_id)
 
         # Find Usable Heart
         heart_json = Hearts.get(self, id)
@@ -107,9 +107,12 @@ class Matches(Resource):
 
     def get(self, user_id):
         # Get all matches
-        if current_user.userType == "student":
+        user = get_user(user_id)
+
+        # Check user type
+        if user.userType == "student":
             match_lst = Match.query.filter_by(student_id=user_id).all()
-        elif current_user.userType == "mentor":
+        elif user.userType == "mentor":
             match_lst = Match.query.filter_by(mentor_id=user_id).all()
 
         if match_lst is None:
@@ -122,6 +125,8 @@ class Matches(Resource):
     @type_required(type="user")
     def post(self, user_id):
         # Create match given mentor_id and timestamp
+        _ = get_user(user_id)
+
         try:
             json_data = request.get_json()
             mentor_id = json_data['mentor_id']
@@ -165,6 +170,7 @@ class Matches(Resource):
 
     @type_required("mentor")
     def put(self, user_id):
+        _ = get_user(user_id)
         try:
             json_data = request.get_json()
             match_id = json_data['match_id']
@@ -251,6 +257,8 @@ class UserHashtags(Resource):
 
     def get(self, user_id):
         # Get all following hashtag
+        _ = get_user(user_id)
+
         hashtags = UserHashtag.query.filter_by(user_id=user_id).all()
 
         if hashtags is None:
@@ -263,6 +271,8 @@ class UserHashtags(Resource):
 
     def post(self, user_id):
         # Follow new hashtag
+        _ = get_user(user_id)
+
         try:
             json_data = request.get_json()
             hashtag_id = json_data['hashtag_id']
@@ -300,6 +310,8 @@ class UserHashtags(Resource):
 
     def delete(self, user_id):
         # Unfollow a hashtag
+        _ = get_user(user_id)
+
         try:
             json_data = request.get_json()
             hashtag_id = json_data['hashtag_id']

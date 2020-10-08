@@ -1,11 +1,7 @@
 from datetime import datetime
 from flask import g
 from sqlalchemy.dialects import mysql
-try:
-    from database import db
-    from auth import jwt, auth
-except ImportError:
-    from .database import db
+from app.database import db
 
 
 class User(db.Model):

@@ -3,19 +3,14 @@ import json
 from functools import wraps
 from flasgger import swag_from
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required, fresh_login_required
-from flask import request, jsonify
+from flask import request, jsonify, abort
 from flask import current_app as app
 from flask_restful import Resource
 from password_validator import PasswordValidator
+from app.messages import Message
+from app.models import User
+from app.database import db
 
-try:
-    from messages import Message
-    from models import User
-    from database import db
-except ImportError:
-    from .messages import Message
-    from .models import User
-    from .database import db
 
 # Init custom message
 message = Message()
@@ -25,7 +20,6 @@ login_manager = LoginManager()
 
 # Create a password schema
 schema = PasswordValidator()
-# Add properties to it
 schema\
     .min(8)\
     .max(100)\
@@ -33,6 +27,28 @@ schema\
     .has().lowercase()\
     .has().digits()\
     .has().no().spaces()\
+
+def type_required(type):
+    # Decorator to check if user is certain type
+    def type_required_sub(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if not current_user.userType is type:
+                message.set_data({"user": "User does not have access"})
+                return message.FORBIDDEN
+            return func(*args, **kwargs)
+        return wrapper
+    return type_required_sub
+
+
+def get_user(user_id):
+    # Function to get and check user based on id
+    if user_id == current_user.id:
+        return current_user
+    else:
+        message.set_data({"user": "User does not have access"})
+        abort(message.FORBIDDEN)
+
 
 def type_required(type):
     # Decorator to check if user is certain type
@@ -86,6 +102,7 @@ class Register(Resource):
 
             # Get original password
             org_password = json_data['password']
+
             # Check Schema
             if not schema.validate(org_password):
                 message.set_data(
@@ -95,7 +112,6 @@ class Register(Resource):
             password = password_hasher(org_password)
 
         except Exception as why:
-            # Log
             app.logger.info(str(why))
             # Error message
             message.set_data({"user": "Given user info is wrong format"})
@@ -139,7 +155,6 @@ class Login(Resource):
             email = json_data['email']
             password = json_data['password']
         except Exception as why:
-            # Log
             app.logger.info("Email or password is wrong. " + str(why))
             # Error message
             message.set_data(
@@ -173,7 +188,7 @@ class Login(Resource):
 class Logout(Resource):
     @login_required
     def post(self, user_id):
-        user = current_user
+        user = get_user(user_id)
         user.authenticated = False
         logout_user()
 
@@ -185,10 +200,15 @@ class UserData(Resource):
     @login_required
     def get(self, user_id):
         # Get all user data
-        return json.dumps(current_user.as_dict(), default=str)
+        user = get_user(user_id)
+        return json.dumps(user.as_dict(), default=str)
 
     @login_required
     def post(self, user_id):
+        # Change user info
+
+        user = get_user(user_id)
+
         try:
             # Get user infos
             json_data = request.get_json()
@@ -205,9 +225,6 @@ class UserData(Resource):
             # Error message
             message.set_data({"user": "Given user info is wrong format"})
             return message.INVALID_INPUT_422
-
-        # Get current user
-        user = current_user
 
         # Check if any field is none.
         userInfo = [id, email, name, phone, birthday, location, data]
@@ -237,6 +254,10 @@ class Password(Resource):
     @login_required
     @fresh_login_required
     def post(self, user_id):
+        # Change password
+
+        user = get_user(user_id)
+
         try:
             # Get old and new passwords.
             json_data = request.get_json()
@@ -249,9 +270,6 @@ class Password(Resource):
             message.set_data(
                 {"password": "Given password info is wrong format"})
             return message.INVALID_INPUT_422
-
-        # Get current user
-        user = current_user
 
         # Check if user password does not match with old password.
         if not bcrypt.checkpw(old_pass.encode('utf-8'), user.password.encode('utf-8')):
