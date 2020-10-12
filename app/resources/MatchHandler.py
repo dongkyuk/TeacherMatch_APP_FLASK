@@ -78,12 +78,12 @@ class Hearts(Resource):
         message.set_data({'heart_id': heart.id})
         return message.SUCCESS
 
-    def put(self, id):
+    def put(self, user_id):
         # Use Heart
         _ = get_user(user_id)
 
         # Find Usable Heart
-        heart_json = Hearts.get(self, id)
+        heart_json = Hearts.get(self, user_id)
 
         id = heart_json[0]["data"]["id"]
         if id is None:
@@ -122,7 +122,7 @@ class Matches(Resource):
 
         return message.SUCCESS
 
-    @type_required(type="user")
+    @type_required("student")
     def post(self, user_id):
         # Create match given mentor_id and timestamp
         _ = get_user(user_id)

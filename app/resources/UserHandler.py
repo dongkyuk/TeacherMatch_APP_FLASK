@@ -55,7 +55,9 @@ def type_required(type):
     def type_required_sub(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if not current_user.userType is type:
+            if not current_user.userType == type:
+                return type
+                return current_user.userType
                 message.set_data({"user": "User does not have access"})
                 return message.FORBIDDEN
             return func(*args, **kwargs)
