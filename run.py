@@ -18,8 +18,8 @@ def create_app():
 
 
 def db_config(app):
-    db.init_app(app)
     with app.app_context():
+        db.init_app(app)
         db.create_all()
 
 
@@ -52,6 +52,7 @@ def main():
     api.add_resource(Matches, '/users/<string:user_id>/match')
     api.add_resource(Hashtags, '/hashtags')
     api.add_resource(UserHashtags, '/users/<string:user_id>/hashtag')
+    
     # Run app
     app.run(port=5000, debug=True, host='localhost', use_reloader=True)
 

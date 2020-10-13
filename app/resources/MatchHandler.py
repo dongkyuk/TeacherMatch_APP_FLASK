@@ -9,9 +9,7 @@ from app.resources.UserHandler import login_manager, type_required, get_user
 from app.database import db
 
 
-
-# Init custom error
-message = Message()
+message = Message()  # Init custom error
 
 
 def heart_loader(id):
@@ -48,20 +46,19 @@ class Hearts(Resource):
 
     def post(self, user_id):
         # Make heart when given timestamp
+
         _ = get_user(user_id)
 
         try:
             json_data = request.get_json()
             timestamp = json_data['timestamp']
         except Exception as why:
-            # Log input strip or etc. errors.
             logging.info("Given Data is wrong. " + str(why))
             # Return invalid input errors
             message.set_data({"timestamp": "Given Timestamp is wrong format"})
             return message.INVALID_INPUT_422
 
-        # Create random heart id
-        id = uuid.uuid1()
+        id = uuid.uuid1()  # Create random heart id
         # Repeat if id already exists
         while(heart_loader(id) is not None):
             id = uuid.uuid1()
@@ -100,6 +97,42 @@ class Hearts(Resource):
 
         message.set_data({"id": id})
         return message.SUCCESS
+
+
+class UnlockedProfiles(Resource):
+    method_decorators = [login_required]
+
+    def get():
+        
+
+
+    @type_required("student")
+    def post(self, user_id):
+        student_id = get_user(user_id)
+
+        try:
+            json_data = request.get_json()
+            mentor_id = json_data['mentor_id']
+            heart_id = json_data['heart_id']
+            timestamp = json_data['timestamp']
+        except Exception as why:
+            logging.info("Given Data is wrong. " + str(why))
+            # Return invalid input errors
+            message.set_data({"data": "Given data is wrong format"})
+            return message.INVALID_INPUT_422
+
+        # Create a new unlocked profile
+        unlocked_prof = UnlockedProfile(heart_id=heart_id, student_id=student_id, mentor_id=mentor_id, timestamp=timestamp)
+
+        # Add heart to session.
+        db.session.add(unlocked_prof)
+
+        # Commit session.
+        db.session.commit(unlocked_prof)
+
+        message.set_data({'heart_id': heart.id})
+        return message.SUCCESS  
+        
 
 
 class Matches(Resource):
@@ -340,3 +373,5 @@ class UserHashtags(Resource):
 
         message.set_data(None)
         return message.SUCCESS
+
+

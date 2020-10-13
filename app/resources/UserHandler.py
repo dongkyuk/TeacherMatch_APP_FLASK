@@ -48,22 +48,7 @@ def get_user(user_id):
     else:
         message.set_data({"user": "User does not have access"})
         abort(message.FORBIDDEN)
-
-
-def type_required(type):
-    # Decorator to check if user is certain type
-    def type_required_sub(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            if not current_user.userType == type:
-                return type
-                return current_user.userType
-                message.set_data({"user": "User does not have access"})
-                return message.FORBIDDEN
-            return func(*args, **kwargs)
-        return wrapper
-    return type_required_sub
-
+        
 
 @login_manager.unauthorized_handler
 def unauthorized():
