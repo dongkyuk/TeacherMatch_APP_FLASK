@@ -322,7 +322,9 @@ class UserHashtags(Resource):
             return message.INVALID_INPUT_422
 
         # Check if existing content
-        if UserHashtag.query.filter_by(hashtag_id=hashtag_id).first() is not None:
+        if UserHashtag.query.filter_by(user_id=user_id, hashtag_id=hashtag_id).first() is not None:
+            print(UserHashtag.query.filter_by(
+                hashtag_id=hashtag_id).first().id)
             message.set_data({"hashtag_id": "Already following hashtag"})
             return message.ALREADY_EXIST
 
@@ -388,15 +390,11 @@ class UserFeed(Resource):
         model = RecommenderModel()
 
         # Get similar users id list
-        similar_user_ids = model.get_similar_users(user_id, num_users=2)
+        similar_user_ids = model.get_similar_users(user_id, num_users=1)
 
         # Filter only mentor ids
-        for similar_user_id in similar_user_ids:
-            user = User.query.filter_by(id=similar_user_id).first()
-            if user.userType != "mentor":
-                similar_user_ids.remove(similar_user_id)
-
-        print(similar_user_ids)
+        similar_user_ids = [similar_user_id for similar_user_id in similar_user_ids if User.query.filter_by(
+            id=similar_user_id).first().userType == "mentor"]
 
         message.set_data(
             {"id_lst": similar_user_ids})
