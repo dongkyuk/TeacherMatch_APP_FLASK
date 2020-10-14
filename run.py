@@ -4,7 +4,7 @@ from flask import Flask
 from flask_restful import Api
 from app.database import db
 from app.resources.UserHandler import login_manager, Register, Login, Logout, UserData, Password
-from app.resources.MatchHandler import Hearts, Matches, Hashtags, UserHashtags
+from app.resources.MatchHandler import Hearts, Matches, Hashtags, UserHashtags, UserFeed, UnlockedProfiles
 
 
 def create_app():
@@ -52,7 +52,9 @@ def main():
     api.add_resource(Matches, '/users/<string:user_id>/match')
     api.add_resource(Hashtags, '/hashtags')
     api.add_resource(UserHashtags, '/users/<string:user_id>/hashtag')
-    
+    api.add_resource(UserFeed, '/users/<string:user_id>/feed')
+    api.add_resource(UnlockedProfiles, '/users/<string:user_id>/unlockedprofile')
+
     # Run app
     app.run(port=5000, debug=True, host='localhost', use_reloader=True)
 

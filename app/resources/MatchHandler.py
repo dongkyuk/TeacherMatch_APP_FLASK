@@ -7,7 +7,7 @@ from app.messages import Message
 from app.models import User, Hashtag, UserHashtag, Heart, UnlockedProfile, Match, Mock_class_request
 from app.resources.UserHandler import login_manager, type_required, get_user
 from app.database import db
-
+from app.recommender import RecommenderModel
 
 message = Message()  # Init custom error
 
@@ -102,9 +102,13 @@ class Hearts(Resource):
 class UnlockedProfiles(Resource):
     method_decorators = [login_required]
 
-    def get():
-        
-
+    @type_required("student")
+    def get(self, user_id):
+        _ = get_user(user_id)
+        '''
+        under construction
+        '''
+        return None
 
     @type_required("student")
     def post(self, user_id):
@@ -122,7 +126,8 @@ class UnlockedProfiles(Resource):
             return message.INVALID_INPUT_422
 
         # Create a new unlocked profile
-        unlocked_prof = UnlockedProfile(heart_id=heart_id, student_id=student_id, mentor_id=mentor_id, timestamp=timestamp)
+        unlocked_prof = UnlockedProfile(
+            heart_id=heart_id, student_id=student_id, mentor_id=mentor_id, timestamp=timestamp)
 
         # Add heart to session.
         db.session.add(unlocked_prof)
@@ -131,8 +136,7 @@ class UnlockedProfiles(Resource):
         db.session.commit(unlocked_prof)
 
         message.set_data({'heart_id': heart.id})
-        return message.SUCCESS  
-        
+        return message.SUCCESS
 
 
 class Matches(Resource):
@@ -304,7 +308,7 @@ class UserHashtags(Resource):
 
     def post(self, user_id):
         # Follow new hashtag
-        _ = get_user(user_id)
+        user = get_user(user_id)
 
         try:
             json_data = request.get_json()
@@ -330,7 +334,7 @@ class UserHashtags(Resource):
 
         # Create a new hashtag
         user_hashtag = UserHashtag(
-            id=id, hashtag_id=hashtag_id, user_id=user_id)
+            id=id, hashtag_id=hashtag_id, user_id=user_id, userType=user.userType)
 
         # Add match to session.
         db.session.add(user_hashtag)
@@ -375,3 +379,26 @@ class UserHashtags(Resource):
         return message.SUCCESS
 
 
+class UserFeed(Resource):
+    method_decorators = [login_required]
+
+    def get(self, user_id):
+        _ = get_user(user_id)
+
+        model = RecommenderModel()
+
+        # Get similar users id list
+        similar_user_ids = model.get_similar_users(user_id, num_users=2)
+
+        # Filter only mentor ids
+        for similar_user_id in similar_user_ids:
+            user = User.query.filter_by(id=similar_user_id).first()
+            if user.userType != "mentor":
+                similar_user_ids.remove(similar_user_id)
+
+        print(similar_user_ids)
+
+        message.set_data(
+            {"id_lst": similar_user_ids})
+
+        return message.SUCCESS

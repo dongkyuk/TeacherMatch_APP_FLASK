@@ -43,6 +43,7 @@ class UserHashtag(db.Model):
     id = db.Column(db.String, unique=True, primary_key=True)
     user_id = db.Column(db.String)
     hashtag_id = db.Column(db.String)
+    userType = db.Column(db.Enum('student', 'mentor', 'admin'))
 
 
 class Heart(db.Model):
