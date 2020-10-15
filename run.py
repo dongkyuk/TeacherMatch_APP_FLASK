@@ -56,7 +56,7 @@ def main():
     api.add_resource(UnlockedProfiles, '/users/<string:user_id>/unlockedprofile')
 
     # Run app
-    app.run(port=5000, debug=True, host='localhost', use_reloader=True)
+    app.run(port=5000, debug=True, host='0.0.0.0', use_reloader=True)
 
 
 if __name__ == '__main__':
