@@ -14,3 +14,5 @@ class Message():
         self.UNAUTHORIZED = ({"staus" : "fail", "data" : self.data}, 401)
         self.FORBIDDEN = ({"staus" : "fail", "data" : self.data}, 403)
         self.HEADER_NOT_FOUND = ({"staus" : "fail", "data" : self.data}, 403)
+
+

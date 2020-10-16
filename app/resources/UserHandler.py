@@ -1,75 +1,17 @@
-import bcrypt
 import json
-from functools import wraps
 from flasgger import swag_from
-from flask_login import LoginManager, login_user, logout_user, current_user, login_required, fresh_login_required
-from flask import request, jsonify, abort
+from flask_login import login_user, logout_user, current_user, login_required, fresh_login_required
+from flask import request, jsonify
 from flask import current_app as app
 from flask_restful import Resource
-from password_validator import PasswordValidator
 from app.messages import Message
 from app.models import User
 from app.database import db
+from app.utils.extensions import login_manager, schema, type_required, get_user, password_hasher, check_hashed_password, user_loader
 
 
 # Init custom message
 message = Message()
-
-# Init login manager
-login_manager = LoginManager()
-
-# Create a password schema
-schema = PasswordValidator()
-schema\
-    .min(8)\
-    .max(100)\
-    .has().uppercase()\
-    .has().lowercase()\
-    .has().digits()\
-    .has().no().spaces()\
-
-def type_required(type):
-    # Decorator to check if user is certain type
-    def type_required_sub(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            if not current_user.userType is type:
-                message.set_data({"user": "User does not have access"})
-                return message.FORBIDDEN
-            return func(*args, **kwargs)
-        return wrapper
-    return type_required_sub
-
-
-def get_user(user_id):
-    # Function to get and check user based on id
-    if user_id == current_user.id:
-        return current_user
-    else:
-        message.set_data({"user": "User does not have access"})
-        abort(message.FORBIDDEN)
-        
-
-@login_manager.unauthorized_handler
-def unauthorized():
-    # Handle message when unauthorized
-    message.set_data({"login": "Login is required"})
-    return message.UNAUTHORIZED
-
-
-@login_manager.user_loader
-def user_loader(id):
-    # user loader for login manager
-    user = User.query.filter_by(id=id).first()
-    return user
-
-
-def password_hasher(password):
-    # Hash password
-    hashed_password = bcrypt.hashpw(
-        password.encode('utf-8'), bcrypt.gensalt())
-    # Decode and return
-    return hashed_password.decode('utf-8')
 
 
 class Register(Resource):
@@ -160,7 +102,8 @@ class Login(Resource):
             return message.DOES_NOT_EXIST
 
         # Check password
-        if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+
+        if check_hashed_password(password, user.password):
             user.authenticated = True
             login_user(user, remember=True)
             # Success
@@ -259,7 +202,7 @@ class Password(Resource):
             return message.INVALID_INPUT_422
 
         # Check if user password does not match with old password.
-        if not bcrypt.checkpw(old_pass.encode('utf-8'), user.password.encode('utf-8')):
+        if not check_hashed_password(old_pass, user.password):
             # Return does not match status.
             message.set_data({"password": "Password is wrong"})
             return message.INVALID_INPUT_422
